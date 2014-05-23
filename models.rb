@@ -1,7 +1,7 @@
 require_relative 'config/sequel'
 
-require "bcrypt"
-require "securerandom"
+# require "bcrypt"
+# require "securerandom"
 require "active_support/core_ext/date_time/calculations"
 
 class Users < Sequel::Model
