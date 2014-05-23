@@ -8,9 +8,9 @@ describe EpttAPI do
   end
 
   describe EpttAPI do
-    describe 'GET /api/v1/hello' do
+    describe 'GET /api/hello' do
       it "says hello to the world" do
-        get "/api/v1/hello"
+        get "/api/hello"
         last_response.status.should == 200
         JSON.parse(last_response.body)["hello"].should == "world"
       end

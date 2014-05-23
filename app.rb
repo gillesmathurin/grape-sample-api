@@ -4,8 +4,8 @@ require_relative 'models'
 
 class EpttAPI < Grape::API
   prefix 'api'
-  # version 'v1'
   format :json
+  # version 'v1'
 
   helpers do
     # making the logger available in the endpoint context
@@ -22,7 +22,4 @@ class EpttAPI < Grape::API
   get 'sync' do
     # 
   end
-
-  des
-  post
 end
