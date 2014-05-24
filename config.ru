@@ -1,4 +1,4 @@
-require File.expand_path File.join(File.dirname(__FILE__), 'app')
+require File.expand_path('../config/environment.rb', __FILE__)
 
 use Rack::Deflater
 run EpttAPI

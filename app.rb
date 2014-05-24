@@ -19,7 +19,7 @@ class EpttAPI < Grape::API
   end
 
   desc "synchronize datas between client and server"
-  get 'sync' do
-    # 
+  post 'sync' do
+    parsed_datas = JSON.parse(params[:local_database])
   end
 end
