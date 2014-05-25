@@ -8,6 +8,7 @@ class Users < Sequel::Model
   one_to_many :reservations
   one_to_many :evaluations
   one_to_many :results
+
 end
 
 class Aircrafts < Sequel::Model
@@ -25,6 +26,7 @@ class Conditions < Sequel::Model
 end
 
 class Courses < Sequel::Model
+  unrestrict_primary_key
   one_to_many :reservations
   one_to_many :results
 end

@@ -38,8 +38,11 @@ class EpttAPI < Grape::API
       csv_raw = params[:file_content]
       error = ""
       query = ""
+     # filename = "/tmp/stars-#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}.csv"
+      #File.open(filename,'w:UTF-8') {|f| f.write(params[:file_content]) }
       courses = DB[:courses]
       trainees = DB[:trainees]
+     # csv_raw.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
 
       CSV::Converters[:blank_to_nil] = lambda do |field|
         field && field.empty? ? nil : field
@@ -49,6 +52,7 @@ class EpttAPI < Grape::API
       CSV.parse(csv_raw,{:headers => true, :header_converters => :symbol, :converters => [:all, :blank_to_nil]}) do |row|
         if row.to_hash.length > 0
             unless  row[:course].nil? || row[:course].empty? || row[:category] == 'maintenance' || row[:variants].to_s =~ /PRAC|PRAC-ONLY/i
+             p "#{row[:course].to_s.nil?} - #{row[:course].to_s.empty?} -  #{row[:category] == 'maintenance'}  - #{row[:variants].to_s =~ /PRAC|PRAC-ONLY/i}"
             error = "parsed"
             start_date = row[:startdate].to_s.gsub('/','_')
             end_date = row[:enddate]
@@ -93,9 +97,8 @@ class EpttAPI < Grape::API
           end
         end
       end
-      rescue CSV::MalformedCSVError => e
-        puts "failed to parse line with random quote char #{e}"
-        error = e
+      rescue CSV::MalformedCSVError
+        puts "failed to parse line with random quote char"
       end
       {
         :error => error,
