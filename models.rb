@@ -29,6 +29,7 @@ class Courses < Sequel::Model
   unrestrict_primary_key
   one_to_many :reservations
   one_to_many :results
+  attr_accessor :user_deleted
 end
 
 class Evaluations < Sequel::Model
@@ -56,6 +57,7 @@ end
 class Reservations < Sequel::Model
   many_to_one :course
   many_to_one :user
+  one_to_many :logbook_notes
 end
 
 class Results < Sequel::Model

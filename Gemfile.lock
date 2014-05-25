@@ -12,7 +12,6 @@ GEM
       ice_nine (~> 0.11.0)
       thread_safe (~> 0.3, >= 0.3.1)
     builder (3.2.2)
-    charlock_holmes (0.7.1)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     daemons (1.1.9)
@@ -84,7 +83,6 @@ PLATFORMS
 
 DEPENDENCIES
   bundler
-  charlock_holmes
   grape
   grape-entity
   grape-swagger
