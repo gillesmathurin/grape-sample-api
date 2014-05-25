@@ -27,6 +27,7 @@ end
 class Courses < Sequel::Model
   one_to_many :reservations
   one_to_many :results
+  attr_accessor :user_deleted
 end
 
 class Evaluations < Sequel::Model
