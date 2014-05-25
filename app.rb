@@ -22,7 +22,6 @@ class EpttAPI < Grape::API
   desc "synchronize datas between client and server"
   post 'sync' do
     parsed_datas = JSON.parse(params[:local_database])
-
     keys = ["courses", "reservations", "results", "logbook_notes", "evaluations", "practical_exercises"]
 
     keys.each do |key|
@@ -48,8 +47,8 @@ class EpttAPI < Grape::API
               if course["user_deleted"] == "1"
                 Courses.where(id: course_id).delete
                 reservations = Reservations.where(course_id: course_id)
-                reservations.logbook_notes.dataset.delete
-                reservations.dataset.delete
+                reservations.each { |r| r.logbook_notes.delete }
+                reservations.delete
               end
             end
           end

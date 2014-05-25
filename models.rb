@@ -55,6 +55,7 @@ end
 class Reservations < Sequel::Model
   many_to_one :course
   many_to_one :user
+  one_to_many :logbook_notes
 end
 
 class Results < Sequel::Model
