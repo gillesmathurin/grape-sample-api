@@ -66,6 +66,10 @@ describe EpttAPI do
         PracticalExercises.count.should == 0
         TheoryLinks.count.should == 0
       end
+
+      it "saves the practical exercises links" do
+        
+      end
     end
   end
 end
