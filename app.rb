@@ -107,8 +107,12 @@ class EpttAPI < Grape::API
           end
         end
       end
-
     end
+
+    # Response
+    {
+      practical_exercises: PracticalExercises.all
+    }
   end  
 
 
@@ -179,6 +183,7 @@ class EpttAPI < Grape::API
         puts "failed to parse line with random quote char #{e}"
         error = e
       end
+      # Il n'y a pas une façon plus simple de retourner la réponse ?
       {
         :error => error,
         :users => Users.all.map { |e| { :id => e.id, :first_name => e.first_name , :last_name => e.last_name, :login => e.login, :role => e.role, :password_clear => e.password_clear, :company => e.company} },
