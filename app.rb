@@ -164,8 +164,8 @@ class EpttAPI < Grape::API
       results: map_models_to_hash(Result),
       logbook_notes: map_models_to_hash(LogbookNote),
       evaluations: map_models_to_hash(Evaluation),
-      practical_exercises: map_models_to_hash(PracticalExercise)
-      files_to_sync: get_bucket_file_list()
+      practical_exercises: map_models_to_hash(PracticalExercise),
+      files_to_sync: get_bucket_file_list
       # TODO : include files list into response
     }
   end
