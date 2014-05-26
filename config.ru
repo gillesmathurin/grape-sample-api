@@ -5,7 +5,6 @@ use Rack::Deflater
 use Rack::Cors do
   allow do
     origins '*'
-    resource '*', headers: :any
   end
 end
 run EpttAPI
