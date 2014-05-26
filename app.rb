@@ -57,6 +57,12 @@ class EpttAPI < Grape::API
       return s3.buckets[s3_credentials["s3_bucket"]]
     end
 
+    def get_bucket_files_list
+      arr = []
+      get_s3_bucket.objects.each { |obj| arr << obj.key }
+      arr
+    end
+
     # TODO : l.84 upload file into S3
     def update_practical_exercises_and_associated_models(pe)
       pe_id = pe["id"]
@@ -159,6 +165,7 @@ class EpttAPI < Grape::API
       logbook_notes: map_models_to_hash(LogbookNote),
       evaluations: map_models_to_hash(Evaluation),
       practical_exercises: map_models_to_hash(PracticalExercise)
+      files_to_sync: get_bucket_file_list()
       # TODO : include files list into response
     }
   end
