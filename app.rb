@@ -91,23 +91,25 @@ class EpttAPI < Grape::API
 
   desc "synchronize datas between client and server"
   post 'sync' do
-    parsed_datas = JSON.parse(params[:local_database])
-    keys = ["courses", "reservations", "results", "logbook_notes", "evaluations", "practical_exercises"]
+    if params[:local_database]
+      parsed_datas = JSON.parse(params[:local_database])
+      keys = ["courses", "reservations", "results", "logbook_notes", "evaluations", "practical_exercises"]
 
-    keys.each do |key|
-      model = key.camelize.constantize # transform string into Class name
-      model.unrestrict_primary_key # allow to update id attribute
+      keys.each do |key|
+        model = key.camelize.constantize # transform string into Class name
+        model.unrestrict_primary_key # allow to update id attribute
 
-      if parsed_datas[key] && parsed_datas[key].any?
-        unless key == "courses" || key == "practical_exercises"
-          update_or_create_records_for_model(parsed_datas[key], model)
-        else
-          delete_courses(parsed_datas["courses"]) if key == "courses"
-          if key == "practical_exercises"
-            parsed_datas["practical_exercises"].each do |pe|
-              pe_id = pe["id"]
-              delete_practical_exercises_and_associated_models(pe_id) if pe["user_deleted"] == "1"
-              update_practical_exercises_and_associated_models(pe) if pe["user_modified"] == "1"
+        if parsed_datas[key] && parsed_datas[key].any?
+          unless key == "courses" || key == "practical_exercises"
+            update_or_create_records_for_model(parsed_datas[key], model)
+          else
+            delete_courses(parsed_datas["courses"]) if key == "courses"
+            if key == "practical_exercises"
+              parsed_datas["practical_exercises"].each do |pe|
+                pe_id = pe["id"]
+                delete_practical_exercises_and_associated_models(pe_id) if pe["user_deleted"] == "1"
+                update_practical_exercises_and_associated_models(pe) if pe["user_modified"] == "1"
+              end
             end
           end
         end
