@@ -96,6 +96,7 @@ class EpttAPI < Grape::API
 
   before do
     header "Access-Control-Allow-Origin", "*"
+    header "Access-Control-Request-Method", "*"
   end
 
   desc "testing endpoint"
@@ -144,7 +145,7 @@ class EpttAPI < Grape::API
       # TODO : include links and theory_links into practical_exercises
       # TODO : include files list into response
     }
-  end  
+  end
 
 
   desc "imort trainees"
