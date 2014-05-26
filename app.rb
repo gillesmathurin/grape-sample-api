@@ -6,6 +6,7 @@ require 'date'
 require 'time'
 require 'active_support'
 require 'yaml'
+require 'aws-sdk'
 require_relative 'models'
 
 class EpttAPI < Grape::API
@@ -56,6 +57,7 @@ class EpttAPI < Grape::API
       return s3.buckets[s3_credentials["s3_bucket"]]
     end
 
+    # TODO : l.84 upload file into S3
     def update_practical_exercises_and_associated_models(pe)
       pe_id = pe["id"]
       pe_wo_links_and_theory_links = pe.reject {|k,v| k == "links" || k == "theory_links"}
@@ -81,8 +83,10 @@ class EpttAPI < Grape::API
           if link["user_modified"] == "1"
             Links[link_id].nil? ? Links.create(link) : Links[link_id].update(link)
             if link["filename"].present?
+              filename = link["filename"]
               # File to upload to S3 should be in params["#{link["filename"]}"]
-              # TODO : 
+              puts params[filename]
+              s3_bucket.objects[filename]
             end
           end
         end

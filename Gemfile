@@ -13,4 +13,5 @@ gem 'aws-sdk', '~> 1.41.0'
 gem 'rake', groups: [:development,:test]
 gem 'rack-test', group: :test
 gem 'rspec', group: :test
+gem 'pry', groups: [:development, :test]
 # gem 'thin', groups: [:development,:test]
