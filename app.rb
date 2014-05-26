@@ -59,7 +59,7 @@ class EpttAPI < Grape::API
 
     def get_bucket_files_list
       arr = []
-      get_s3_bucket.objects.each { |obj| arr << obj.key }
+      get_s3_bucket.objects.each { |obj| arr << obj.key.public_url }
       arr
     end
 
@@ -170,10 +170,9 @@ class EpttAPI < Grape::API
     }
   end
 
-
-  desc "imort trainees"
+  desc "import trainees"
   params do
-        requires :file_content, type: String, desc: "list trainees"
+      requires :file_content, type: String, desc: "list trainees"
   end
   post 'import_stars' do
       csv_raw = params[:file_content]
