@@ -57,9 +57,9 @@ class EpttAPI < Grape::API
       return s3.buckets[s3_credentials["s3_bucket"]]
     end
 
-    def get_bucket_files_list
+    def get_bucket_files_and_url
       arr = []
-      get_s3_bucket.objects.each { |obj| arr << obj.public_url }
+      get_s3_bucket.objects.each { |obj| arr << {filename: obj.key, url: obj.public_url} }
       arr
     end
 
@@ -122,7 +122,7 @@ class EpttAPI < Grape::API
     header "Access-Control-Request-Method", "*"
   end
 
-  desc "testing endpoint"
+  desc "api test endpoint /hello"
   get 'hello' do
     {hello: "world"}
   end
@@ -165,7 +165,7 @@ class EpttAPI < Grape::API
       logbook_notes: map_models_to_hash(LogbookNote),
       evaluations: map_models_to_hash(Evaluation),
       practical_exercises: map_models_to_hash(PracticalExercise),
-      files_to_sync: get_bucket_files_list
+      files_to_sync: get_bucket_files_and_url
       # TODO : include files list into response
     }
   end
