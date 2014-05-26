@@ -9,7 +9,6 @@ describe EpttAPI do
     EpttAPI
   end
 
-
   describe EpttAPI do
     describe 'GET /api/hello' do
       it "says hello to the world" do
@@ -25,13 +24,15 @@ describe EpttAPI do
         Reservations.dataset.delete
         LogbookNotes.dataset.delete
         Results.dataset.delete
+        PracticalExercises.dataset.delete
+        TheoryLinks.dataset.delete
         courses_reservations_logbook[:courses].each do |course_params|
           Courses.unrestrict_primary_key
           Courses.create(course_params)
         end
       end
 
-      it "delete the course marked for delete, their reservations and logbook_notes" do
+      it "delete the courses marked for delete, their reservations and logbook_notes" do
         pending("Not a needed feature")
         Courses.count.should == 3
         post "/api/sync", local_database: courses_reservations_logbook.to_json
@@ -54,6 +55,16 @@ describe EpttAPI do
         post "/api/sync", local_database: logbook_notes_datas.to_json
         last_response.status.should == 201
         LogbookNotes.count.should == 1
+      end
+
+      it "deletes the practical_exercises marked for destroy" do
+        post "/api/sync", local_database: practical_exercises_datas.to_json
+        last_response.status.should == 201
+        PracticalExercises.count.should == 2
+        TheoryLinks.count.should == 2
+        post "/api/sync", local_database: practical_exercises_to_delete.to_json
+        PracticalExercises.count.should == 0
+        TheoryLinks.count.should == 0
       end
     end
   end
