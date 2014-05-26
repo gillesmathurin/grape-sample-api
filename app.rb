@@ -84,6 +84,11 @@ class EpttAPI < Grape::API
     header "Access-Control-Allow-Origin", "*"
   end
 
+  desc "testing endpoint"
+  get 'hello' do
+    {hello: "world"}
+  end
+
   desc "synchronize datas between client and server"
   post 'sync' do
     parsed_datas = JSON.parse(params[:local_database])
