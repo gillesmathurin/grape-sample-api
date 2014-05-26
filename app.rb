@@ -5,6 +5,7 @@ require 'csv'
 require 'date'
 require 'time'
 require 'active_support'
+require 'yaml'
 require_relative 'models'
 
 class EpttAPI < Grape::API
@@ -49,6 +50,12 @@ class EpttAPI < Grape::API
       Evaluations.where(practical_exercise_id: id).delete
     end
 
+    def get_s3_bucket
+      s3_credentials ||= YAML.load_file(File.join("config", "s3.yml"))
+      s3 = AWS::S3.new(s3_credentials.merge(verify_response_body_content_length: false))
+      return s3.buckets[s3_credentials["s3_bucket"]]
+    end
+
     def update_practical_exercises_and_associated_models(pe)
       pe_id = pe["id"]
       pe_wo_links_and_theory_links = pe.reject {|k,v| k == "links" || k == "theory_links"}
@@ -66,13 +73,16 @@ class EpttAPI < Grape::API
 
       if pe.has_key?("links")
         Links.unrestrict_primary_key
+        # create S3 session object and get bucket
+        s3_bucket = get_s3_bucket
         pe["links"].each do |link|
           link_id = link["id"]
           Links[link_id].delete if link["user_deleted"] == "1"
           if link["user_modified"] == "1"
             Links[link_id].nil? ? Links.create(link) : Links[link_id].update(link)
             if link["filename"].present?
-              puts params["#{link["filename"]}"]
+              # File to upload to S3 should be in params["#{link["filename"]}"]
+              # TODO : 
             end
           end
         end
@@ -118,7 +128,17 @@ class EpttAPI < Grape::API
 
     # Response
     {
-      practical_exercises: PracticalExercises.all
+      users: Users.all,
+      aircrafts: Aircrafts.all,
+      courses: Courses.all,
+      reservations: Reservations.all,
+      chapters: Chapters.all,
+      results: Results.all,
+      logbook_notes: LogbookNotes.all,
+      evaluations: Evaluations.all
+      # TODO : include attempts into evaluations
+      # TODO : include links and theory_links into practical_exercises
+      # TODO : include files list into response
     }
   end  
 
