@@ -150,8 +150,8 @@ class EpttAPI < Grape::API
       chapters: map_models_to_hash(Chapters),
       results: map_models_to_hash(Results),
       logbook_notes: map_models_to_hash(LogbookNotes),
-      evaluations: Evaluations.all.map { |e| {id: e.id, practical_exercise_id: e.practical_exercise_id, user_id: e.user_id, name: e.name, status: e.status, completed: e.completed, user_modified: e.user_modified, user_deleted: e.user_deleted, attempts: e.attempts.map { |a| id: a.id, date_attempt: a.date_attempt, instructor_first_name: a.instructor_first_name, instructor_last_name: a.instructor_last_name, result: a.result, evaluation_id: a.evaluation_id }} }
-      # practical_exercises: 
+      evaluations: Evaluations.all.map { |e| {id: e.id, practical_exercise_id: e.practical_exercise_id, user_id: e.user_id, name: e.name, status: e.status, completed: e.completed, user_modified: e.user_modified, user_deleted: e.user_deleted, attempts: e.attempts.map { |a| {id: a.id, date_attempt: a.date_attempt, instructor_first_name: a.instructor_first_name, instructor_last_name: a.instructor_last_name, result: a.result, evaluation_id: a.evaluation_id} }} }
+      practical_exercises: PracticalExercises.all.map { |pe| {id: pe.id, } }
       # TODO : include links and theory_links into practical_exercises
       # TODO : include files list into response
     }
