@@ -4,49 +4,48 @@ require_relative 'config/sequel'
 # require "securerandom"
 require "active_support/core_ext/date_time/calculations"
 
-class Users < Sequel::Model
+class User < Sequel::Model
   one_to_many :reservations
   one_to_many :evaluations
   one_to_many :results
-
 end
 
-class Aircrafts < Sequel::Model
+class Aircraft < Sequel::Model
 end
 
-class Attempts < Sequel::Model
+class Attempt < Sequel::Model
   many_to_one :evaluation
 end
 
-class Chapters < Sequel::Model
+class Chapter < Sequel::Model
 end
 
-class Conditions < Sequel::Model
+class Condition < Sequel::Model
   many_to_one :practical_exercise
 end
 
-class Courses < Sequel::Model
+class Course < Sequel::Model
   unrestrict_primary_key
   one_to_many :reservations
   one_to_many :results
   attr_accessor :user_deleted
 end
 
-class Evaluations < Sequel::Model
+class Evaluation < Sequel::Model
   one_to_many :attempts
   many_to_one :practical_exercise
   many_to_one :user
 end
 
-class Links < Sequel::Model
+class Link < Sequel::Model
   many_to_one :practical_exercise
 end
 
-class LogbookNotes < Sequel::Model
+class LogbookNote < Sequel::Model
   many_to_one :reservation
 end
 
-class PracticalExercises < Sequel::Model
+class PracticalExercise < Sequel::Model
   one_to_many :evaluations
   one_to_many :conditions
   one_to_many :links
@@ -54,18 +53,18 @@ class PracticalExercises < Sequel::Model
   one_to_many :theory_links
 end
 
-class Reservations < Sequel::Model
+class Reservation < Sequel::Model
   many_to_one :course
   many_to_one :user
   one_to_many :logbook_notes
 end
 
-class Results < Sequel::Model
+class Result < Sequel::Model
   many_to_one :practical_exercise
   many_to_one :user
   many_to_one :course
 end
 
-class TheoryLinks < Sequel::Model
+class TheoryLink < Sequel::Model
   many_to_one :practical_exercise
 end

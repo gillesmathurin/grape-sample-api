@@ -25,7 +25,7 @@ class EpttAPI < Grape::API
         record_id = hash["id"]
         if hash["user_modified"] == "1"
           model[record_id].nil? ? model.create(hash) : model[record_id].update(hash)
-          hash["attempts"].each { |attempt| Attempts.create(attempt) } if hash.has_key?("attempts")
+          hash["attempts"].each { |attempt| Attempt.create(attempt) } if hash.has_key?("attempts")
         end
       end
     end
@@ -34,8 +34,8 @@ class EpttAPI < Grape::API
       courses_array.each do |course|
         course_id = course["id"]
         if course["user_deleted"] == "1"
-          Courses.where(id: course_id).delete
-          reservations = Reservations.where(course_id: course_id)
+          Course.where(id: course_id).delete
+          reservations = Reservation.where(course_id: course_id)
           reservations.each { |r| r.logbook_notes.delete }
           reservations.delete
         end
@@ -43,12 +43,12 @@ class EpttAPI < Grape::API
     end
 
     def delete_practical_exercises_and_associated_models(id)
-      PracticalExercises.where(id: id).delete
-      Results.where(practical_exercise_id: id).delete
-      TheoryLinks.where(practical_exercise_id: id).delete
-      Conditions.where(practical_exercise_id: id).delete
-      Links.where(practical_exercise_id: id).delete
-      Evaluations.where(practical_exercise_id: id).delete
+      PracticalExercise.where(id: id).delete
+      Result.where(practical_exercise_id: id).delete
+      TheoryLink.where(practical_exercise_id: id).delete
+      Condition.where(practical_exercise_id: id).delete
+      Link.where(practical_exercise_id: id).delete
+      Evaluation.where(practical_exercise_id: id).delete
     end
 
     def get_s3_bucket
@@ -61,27 +61,27 @@ class EpttAPI < Grape::API
     def update_practical_exercises_and_associated_models(pe)
       pe_id = pe["id"]
       pe_wo_links_and_theory_links = pe.reject {|k,v| k == "links" || k == "theory_links"}
-      PracticalExercises[pe_id].nil? ? PracticalExercises.create(pe_wo_links_and_theory_links) : PracticalExercises[pe_id].update(pe_wo_links_and_theory_links)
+      PracticalExercise[pe_id].nil? ? PracticalExercise.create(pe_wo_links_and_theory_links) : PracticalExercise[pe_id].update(pe_wo_links_and_theory_links)
 
       if pe.has_key?("theory_links")
-        TheoryLinks.unrestrict_primary_key
+        TheoryLink.unrestrict_primary_key
         pe["theory_links"].each do |theory_link|
           theory_link_id = theory_link["id"]
           if theory_link["user_modified"] == "1"
-            TheoryLinks[theory_link_id].nil? ? TheoryLinks.create(theory_link) : TheoryLinks[theory_link_id].update(theory_link)
+            TheoryLink[theory_link_id].nil? ? TheoryLink.create(theory_link) : TheoryLink[theory_link_id].update(theory_link)
           end
         end
       end
 
       if pe.has_key?("links")
-        Links.unrestrict_primary_key
+        Link.unrestrict_primary_key
         # create S3 session object and get bucket
         s3_bucket = get_s3_bucket
         pe["links"].each do |link|
           link_id = link["id"]
-          Links[link_id].delete if link["user_deleted"] == "1"
+          Link[link_id].delete if link["user_deleted"] == "1"
           if link["user_modified"] == "1"
-            Links[link_id].nil? ? Links.create(link) : Links[link_id].update(link)
+            Link[link_id].nil? ? Link.create(link) : Link[link_id].update(link)
             if link["filename"].present?
               filename = link["filename"]
               # File to upload to S3 should be in params["#{link["filename"]}"]
@@ -98,10 +98,10 @@ class EpttAPI < Grape::API
       model.all.each do |r|
         h = {}
         r.columns.each { |column| h[column] = r.send(column) }
-        if model == Evaluations
+        if model == Evaluation
           h[:attempts] = r.attempts.map { |a| {id: a.id, date_attempt: a.date_attempt, instructor_first_name: a.instructor_first_name, instructor_last_name: a.instructor_last_name, result: a.result, evaluation_id: a.evaluation_id} }
         end
-        if model == PracticalExercises
+        if model == PracticalExercise
           h[:links] = r.links.map { |l| {id: l.id, practical_exercise_id: l.practical_exercise_id, name: l.name, filename: l.filename, user_modified: l.user_modified, user_deleted: l.user_deleted} }
           h[:theory_links] = r.theory_links.map { |tl| {id: tl.id, practical_exercise_id: tl.practical_exercise_id, name: tl.name, reference: tl.reference, user_modified: tl.user_modified} }
         end
@@ -128,7 +128,7 @@ class EpttAPI < Grape::API
       keys = ["courses", "reservations", "results", "logbook_notes", "evaluations", "practical_exercises"]
 
       keys.each do |key|
-        model = key.camelize.constantize # transform string into Class name
+        model = key.singularize.camelize.constantize # transform string into Class name
         model.unrestrict_primary_key # allow to update id attribute
 
         if parsed_datas[key] && parsed_datas[key].any?
@@ -150,15 +150,15 @@ class EpttAPI < Grape::API
 
     # Response
     {
-      users: map_models_to_hash(Users),
-      aircrafts: map_models_to_hash(Aircrafts),
-      courses: map_models_to_hash(Courses),
-      reservations: map_models_to_hash(Reservations),
-      chapters: map_models_to_hash(Chapters),
-      results: map_models_to_hash(Results),
-      logbook_notes: map_models_to_hash(LogbookNotes),
-      evaluations: map_models_to_hash(Evaluations),
-      practical_exercises: map_models_to_hash(PracticalExercises)
+      users: map_models_to_hash(User),
+      aircrafts: map_models_to_hash(Aircraft),
+      courses: map_models_to_hash(Course),
+      reservations: map_models_to_hash(Reservation),
+      chapters: map_models_to_hash(Chapter),
+      results: map_models_to_hash(Result),
+      logbook_notes: map_models_to_hash(LogbookNote),
+      evaluations: map_models_to_hash(Evaluation),
+      practical_exercises: map_models_to_hash(PracticalExercise)
       # TODO : include files list into response
     }
   end
@@ -234,9 +234,9 @@ class EpttAPI < Grape::API
       # Il n'y a pas une façon plus simple de retourner la réponse ?
       {
         :error => error,
-        :users => Users.all.map { |e| { :id => e.id, :first_name => e.first_name , :last_name => e.last_name, :login => e.login, :role => e.role, :password_clear => e.password_clear, :company => e.company} },
-        :courses => Courses.all.map { |e| { :id => e.id, :codename => e.codename , :name => e.name, :category => e.category, :variants => e.variants, :start_date => e.start_date, :end_date => e.end_date, :b_classification => e.b_classification} },
-        :reservations => Reservations.all.map { |e| { :id => e.id, :course_id => e.course_id , :user_id => e.user_id, :group => e.group, :user_modified => e.user_modified} }
+        :users => User.all.map { |e| { :id => e.id, :first_name => e.first_name , :last_name => e.last_name, :login => e.login, :role => e.role, :password_clear => e.password_clear, :company => e.company} },
+        :courses => Course.all.map { |e| { :id => e.id, :codename => e.codename , :name => e.name, :category => e.category, :variants => e.variants, :start_date => e.start_date, :end_date => e.end_date, :b_classification => e.b_classification} },
+        :reservations => Reservation.all.map { |e| { :id => e.id, :course_id => e.course_id , :user_id => e.user_id, :group => e.group, :user_modified => e.user_modified} }
       }
   end
 
