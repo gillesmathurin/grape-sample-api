@@ -82,7 +82,7 @@ class EpttAPI < Grape::API
             Links[link_id].nil? ? Links.create(link) : Links[link_id].update(link)
             if link["filename"].present?
               # File to upload to S3 should be in params["#{link["filename"]}"]
-              # TODO : 
+              # TODO :
             end
           end
         end
@@ -92,6 +92,7 @@ class EpttAPI < Grape::API
 
   before do
     header "Access-Control-Allow-Origin", "*"
+    header "Access-Control-Request-Method", "*"
   end
 
   desc "testing endpoint"
@@ -140,7 +141,7 @@ class EpttAPI < Grape::API
       # TODO : include links and theory_links into practical_exercises
       # TODO : include files list into response
     }
-  end  
+  end
 
 
   desc "imort trainees"
