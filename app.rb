@@ -95,10 +95,19 @@ class EpttAPI < Grape::API
 
     def map_models_to_hash(model)
       result = []
-      model.all.each do |r|
-        h = {}
-        r.columns.each { |column| h[column] = r.send(column) }
-        result << h
+      unless model == PracticalExercises || model == Evaluations
+        model.all.each do |r|
+          h = {}
+          r.columns.each { |column| h[column] = r.send(column) }
+          if model == Evaluations
+            h[:attempts] = r.attempts.map { |a| {id: a.id, date_attempt: a.date_attempt, instructor_first_name: a.instructor_first_name, instructor_last_name: a.instructor_last_name, result: a.result, evaluation_id: a.evaluation_id} }
+          end
+          if model == PracticalExercises
+            h[:links] = r.links.map { |l| {id: l.id, practical_exercise_id: l.practical_exercise_id, name: l.name, filename: l.filename, user_modified: l.user_modified, user_deleted: l.user_deleted} }
+            h[:theory_links] = r.theory_links.map { |tl| {id: tl.id, practical_exercise_id: tl.practical_exercise_id, name: tl.name, reference: tl.reference, user_modified: tl.user_modified} }
+          end
+          result << h
+        end
       end
       return result
     end
@@ -150,9 +159,8 @@ class EpttAPI < Grape::API
       chapters: map_models_to_hash(Chapters),
       results: map_models_to_hash(Results),
       logbook_notes: map_models_to_hash(LogbookNotes),
-      evaluations: Evaluations.all.map { |e| {id: e.id, practical_exercise_id: e.practical_exercise_id, user_id: e.user_id, name: e.name, status: e.status, completed: e.completed, user_modified: e.user_modified, user_deleted: e.user_deleted, attempts: e.attempts.map { |a| {id: a.id, date_attempt: a.date_attempt, instructor_first_name: a.instructor_first_name, instructor_last_name: a.instructor_last_name, result: a.result, evaluation_id: a.evaluation_id} }} }
-      practical_exercises: PracticalExercises.all.map { |pe| {id: pe.id, } }
-      # TODO : include links and theory_links into practical_exercises
+      evaluations: map_models_to_hash(Evaluations),
+      practical_exercises: map_models_to_hash(PracticalExercises)
       # TODO : include files list into response
     }
   end
