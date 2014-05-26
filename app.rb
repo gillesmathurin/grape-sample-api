@@ -144,7 +144,7 @@ class EpttAPI < Grape::API
       # TODO : include attempts into evaluations
       # TODO : include links and theory_links into practical_exercises
       # TODO : include files list into response
-    }
+    }.to_json
   end
 
 
