@@ -133,18 +133,18 @@ class EpttAPI < Grape::API
 
     # Response
     {
-      users: Users.all,
-      aircrafts: Aircrafts.all,
-      courses: Courses.all,
-      reservations: Reservations.all,
-      chapters: Chapters.all,
-      results: Results.all,
-      logbook_notes: LogbookNotes.all,
-      evaluations: Evaluations.all
+      users: Users.all.to_json,
+      aircrafts: Aircrafts.all.to_json,
+      courses: Courses.all.to_json,
+      reservations: Reservations.all.to_json,
+      chapters: Chapters.all.to_json,
+      results: Results.all.to_json,
+      logbook_notes: LogbookNotes.all.to_json,
+      evaluations: Evaluations.all.to_json
       # TODO : include attempts into evaluations
       # TODO : include links and theory_links into practical_exercises
       # TODO : include files list into response
-    }.to_json
+    }
   end
 
 
