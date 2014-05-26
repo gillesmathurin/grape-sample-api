@@ -59,7 +59,7 @@ class EpttAPI < Grape::API
 
     def get_bucket_files_list
       arr = []
-      get_s3_bucket.objects.each { |obj| arr << obj.key.public_url }
+      get_s3_bucket.objects.each { |obj| arr << obj.public_url }
       arr
     end
 
