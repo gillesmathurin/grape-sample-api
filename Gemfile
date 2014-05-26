@@ -1,6 +1,7 @@
 ruby '2.1.1'
 source 'https://rubygems.org'
 gem 'bundler'
+gem 'rack-cors'
 gem 'grape'
 gem 'grape-entity'
 gem 'rack-contrib'
