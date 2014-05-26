@@ -92,6 +92,16 @@ class EpttAPI < Grape::API
         end
       end
     end
+
+    def map_models_to_hash(model)
+      result = []
+      model.all.each do |r|
+        h = {}
+        r.columns.each { |column| h[column] = r.send(column) }
+        result << h
+      end
+      return result
+    end
   end
 
   before do
@@ -131,9 +141,11 @@ class EpttAPI < Grape::API
       end
     end
 
+
+
     # Response
     {
-      users: Users.all.to_json,
+      users: map_models_to_hash(Users),
       aircrafts: Aircrafts.all.to_json,
       courses: Courses.all.to_json,
       reservations: Reservations.all.to_json,
