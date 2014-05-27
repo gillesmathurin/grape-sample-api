@@ -7,6 +7,8 @@ require 'time'
 require 'active_support'
 require 'yaml'
 require 'aws-sdk'
+require 'zip'
+require 'find'
 require_relative 'models'
 
 class EpttAPI < Grape::API
@@ -59,11 +61,37 @@ class EpttAPI < Grape::API
 
     def get_bucket_files_and_url
       arr = []
-      get_s3_bucket.objects.each { |obj| arr << {filename: obj.key, url: obj.public_url} }
+      get_s3_bucket.objects.each {|obj| arr<<{filename: obj.key, url: obj.public_url} }
       arr
     end
 
-    # TODO : l.84 upload file into S3
+    def get_bucket_files_in_zip
+      dir_path = File.expand_path('../tmp/files_to_sync',__FILE__)
+      Dir.mkdir(dir_path) unless Dir.exist?(dir_path)
+      files_urls = get_bucket_files_and_url
+      files_urls.each do |hash|
+        fullpath = dir_path + '/' + hash[:filename]
+        tempfile = File.new(fullpath, "w+", encoding: 'ascii-8bit')
+        begin
+          obj = get_s3_bucket.objects[hash[:filename]]
+          obj.read { |chunk| tempfile.write(chunk) }
+        rescue Exception => e
+        ensure
+          tempfile.close
+        end
+      end
+      zipfile_name = File.expand_path("../tmp/files_to_sync.zip",__FILE__)
+      Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
+        Dir[File.join(dir_path, '*')].each do |file|
+          begin
+            zipfile.add(file.sub(dir_path, '') file)
+          rescue Zip::EntryExistsError
+          end
+        end
+      end
+      return zipfile_name
+    end
+
     def update_practical_exercises_and_associated_models(pe)
       pe_id = pe["id"]
       pe_wo_links_and_theory_links = pe.reject {|k,v| k == "links" || k == "theory_links"}
@@ -154,6 +182,10 @@ class EpttAPI < Grape::API
       end
     end
 
+    content_type 'application/octet-stream'
+    header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
+    get_bucket_files_in_zip
+
     # Response
     {
       users: map_models_to_hash(User),
@@ -165,7 +197,7 @@ class EpttAPI < Grape::API
       logbook_notes: map_models_to_hash(LogbookNote),
       evaluations: map_models_to_hash(Evaluation),
       practical_exercises: map_models_to_hash(PracticalExercise),
-      files_to_sync: get_bucket_files_and_url
+      files_to_sync: File.open(get_bucket_files_in_zip).read
       # TODO : include files list into response
     }
   end

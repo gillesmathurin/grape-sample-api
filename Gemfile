@@ -10,6 +10,7 @@ gem 'sequel'
 gem 'mysql2'
 gem 'json'
 gem 'aws-sdk', '~> 1.41.0'
+gem 'rubyzip', '~> 1.1.2'
 gem 'rake', groups: [:development,:test]
 gem 'rack-test', group: :test
 gem 'rspec', group: :test
