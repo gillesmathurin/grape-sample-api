@@ -182,11 +182,6 @@ class EpttAPI < Grape::API
       end
     end
 
-    # content_type 'application/octet-stream'
-    # header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
-    # header "Access-Control-Allow-Origin", "*"
-    # header "Access-Control-Request-Method", "*"
-
     # Response
     {
       users: map_models_to_hash(User),
@@ -199,8 +194,15 @@ class EpttAPI < Grape::API
       evaluations: map_models_to_hash(Evaluation),
       practical_exercises: map_models_to_hash(PracticalExercise),
       files_to_sync: get_bucket_files_and_url
-      # TODO : include files list into response
     }
+  end
+
+  desc "download zip archive of files_to_sync"
+  get 'files_to_sync' do
+    content_type 'application/zip'
+    header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
+    zipfile_name = get_bucket_files_in_zip
+    File.open(zipfile_name).read
   end
 
   desc "import trainees"
