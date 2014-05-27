@@ -72,25 +72,32 @@ class EpttAPI < Grape::API
       files_urls = get_bucket_files_and_url
       files_urls.each do |hash|
         fullpath = dir_path + '/' + hash[:filename]
-        tempfile = File.new(fullpath, "w+", encoding: 'ascii-8bit')
-        begin
-          obj = get_s3_bucket.objects[hash[:filename]]
-          obj.read { |chunk| tempfile.write(chunk) }
-        rescue Exception => e
-        ensure
-          tempfile.close
-        end
-      end
-      zipfile_name = File.expand_path("../tmp/files_to_sync.zip",__FILE__)
-      Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
-        Dir[File.join(dir_path, '*')].each do |file|
+        unless File.exist?(fullpath)
+          tempfile = File.new(fullpath, "w+", encoding: 'ascii-8bit')
           begin
-            zipfile.add(file.sub(dir_path, ''), file)
-          rescue Zip::EntryExistsError
+              obj = get_s3_bucket.objects[hash[:filename]]
+              obj.read { |chunk| tempfile.write(chunk) }
+          rescue Exception => e
+          ensure
+            tempfile.close
           end
         end
       end
-      return zipfile_name
+      zipfile_name = File.expand_path("../tmp/files_to_sync.zip",__FILE__)
+      unless File.exist?(zipfile_name)
+        Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
+          Dir[File.join(dir_path, '*')].each do |file|
+            begin
+              zipfile.add(file.sub((dir_path+'/'), ''), file)
+            rescue Zip::EntryExistsError => e
+              puts e.message
+            end
+          end
+        end
+      end
+      # put zip file into bucket
+      bucket_zipfile = get_s3_bucket.objects['files_to_sync.zip'].write(Pathname.new(zipfile_name))
+      return bucket_zipfile.public_url
     end
 
     def update_practical_exercises_and_associated_models(pe)
@@ -200,11 +207,8 @@ class EpttAPI < Grape::API
 
   desc "download zip archive of files_to_sync"
   get 'files_to_sync' do
-    content_type 'application/zip'
-    header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
-    zipfile_name = get_bucket_files_in_zip
-    puts zipfile_name
-    File.open(zipfile_name).read
+    url = get_bucket_files_in_zip
+    url
   end
 
   desc "import trainees"
