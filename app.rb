@@ -182,11 +182,10 @@ class EpttAPI < Grape::API
       end
     end
 
-    content_type 'application/octet-stream'
-    header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
-    header "Access-Control-Allow-Origin", "*"
-    header "Access-Control-Request-Method", "*"
-    get_bucket_files_in_zip
+    # content_type 'application/octet-stream'
+    # header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
+    # header "Access-Control-Allow-Origin", "*"
+    # header "Access-Control-Request-Method", "*"
 
     # Response
     {
@@ -199,7 +198,7 @@ class EpttAPI < Grape::API
       logbook_notes: map_models_to_hash(LogbookNote),
       evaluations: map_models_to_hash(Evaluation),
       practical_exercises: map_models_to_hash(PracticalExercise),
-      files_to_sync: File.open(get_bucket_files_in_zip).read
+      # files_to_sync: File.open(get_bucket_files_in_zip).read
       # TODO : include files list into response
     }
   end
