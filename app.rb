@@ -203,6 +203,7 @@ class EpttAPI < Grape::API
     content_type 'application/zip'
     header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
     zipfile_name = get_bucket_files_in_zip
+    puts zipfile_name
     File.open(zipfile_name).read
   end
 
