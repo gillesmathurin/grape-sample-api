@@ -84,7 +84,7 @@ class EpttAPI < Grape::API
       Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
         Dir[File.join(dir_path, '*')].each do |file|
           begin
-            zipfile.add(file.sub(dir_path, '') file)
+            zipfile.add(file.sub(dir_path, ''), file)
           rescue Zip::EntryExistsError
           end
         end
