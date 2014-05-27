@@ -73,7 +73,7 @@ class EpttAPI < Grape::API
       files_urls.each do |hash|
         fullpath = dir_path + '/' + hash[:filename]
         unless File.exist?(fullpath)
-          tempfile = File.new(fullpath, "w+", encoding: 'ascii-8bit')
+          tempfile = File.new(fullpath, "wb+", encoding: 'ascii-8bit')
           begin
               obj = get_s3_bucket.objects[hash[:filename]]
               obj.read { |chunk| tempfile.write(chunk) }
@@ -95,9 +95,7 @@ class EpttAPI < Grape::API
           end
         end
       end
-      # put zip file into bucket
-      bucket_zipfile = get_s3_bucket.objects['files_to_sync.zip'].write(Pathname.new(zipfile_name))
-      return bucket_zipfile.public_url
+      return zipfile_name
     end
 
     def update_practical_exercises_and_associated_models(pe)
@@ -207,8 +205,11 @@ class EpttAPI < Grape::API
 
   desc "download zip archive of files_to_sync"
   get 'files_to_sync' do
-    url = get_bucket_files_in_zip
-    url
+    content_type 'application/octet-stream'
+    header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
+    env['api.format'] = :binary # to try if failing like that
+    path = get_bucket_files_in_zip
+    File.open(path, "rb").read
   end
 
   desc "import trainees"
