@@ -184,6 +184,8 @@ class EpttAPI < Grape::API
 
     content_type 'application/octet-stream'
     header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
+    header "Access-Control-Allow-Origin", "*"
+    header "Access-Control-Request-Method", "*"
     get_bucket_files_in_zip
 
     # Response
