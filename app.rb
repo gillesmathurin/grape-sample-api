@@ -15,6 +15,7 @@ class EpttAPI < Grape::API
   prefix 'api'
   format :json
   # version 'v1'
+  rescue_from :all
 
   helpers do
     # making the logger available in the endpoint context
