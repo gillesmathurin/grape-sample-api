@@ -66,37 +66,37 @@ class EpttAPI < Grape::API
       arr
     end
 
-    def get_bucket_files_in_zip
-      dir_path = File.expand_path('../tmp/files_to_sync',__FILE__)
-      Dir.mkdir(dir_path) unless Dir.exist?(dir_path)
-      files_urls = get_bucket_files_and_url
-      files_urls.each do |hash|
-        fullpath = dir_path + '/' + hash[:filename]
-        unless File.exist?(fullpath)
-          tempfile = File.new(fullpath, "wb+", encoding: 'ascii-8bit')
-          begin
-              obj = get_s3_bucket.objects[hash[:filename]]
-              obj.read { |chunk| tempfile.write(chunk) }
-          rescue Exception => e
-          ensure
-            tempfile.close
-          end
-        end
-      end
-      zipfile_name = File.expand_path("../tmp/files_to_sync.zip",__FILE__)
-      unless File.exist?(zipfile_name)
-        Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
-          Dir[File.join(dir_path, '*')].each do |file|
-            begin
-              zipfile.add(file.sub((dir_path+'/'), ''), file)
-            rescue Zip::EntryExistsError => e
-              puts e.message
-            end
-          end
-        end
-      end
-      return zipfile_name
-    end
+    # def get_bucket_files_in_zip
+    #   dir_path = File.expand_path('../tmp/files_to_sync',__FILE__)
+    #   Dir.mkdir(dir_path) unless Dir.exist?(dir_path)
+    #   files_urls = get_bucket_files_and_url
+    #   files_urls.each do |hash|
+    #     fullpath = dir_path + '/' + hash[:filename]
+    #     unless File.exist?(fullpath)
+    #       tempfile = File.new(fullpath, "wb+", encoding: 'ascii-8bit')
+    #       begin
+    #           obj = get_s3_bucket.objects[hash[:filename]]
+    #           obj.read { |chunk| tempfile.write(chunk) }
+    #       rescue Exception => e
+    #       ensure
+    #         tempfile.close
+    #       end
+    #     end
+    #   end
+    #   zipfile_name = File.expand_path("../tmp/files_to_sync.zip",__FILE__)
+    #   unless File.exist?(zipfile_name)
+    #     Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
+    #       Dir[File.join(dir_path, '*')].each do |file|
+    #         begin
+    #           zipfile.add(file.sub((dir_path+'/'), ''), file)
+    #         rescue Zip::EntryExistsError => e
+    #           puts e.message
+    #         end
+    #       end
+    #     end
+    #   end
+    #   return zipfile_name
+    # end
 
     def update_practical_exercises_and_associated_models(pe)
       pe_id = pe["id"]
@@ -204,11 +204,11 @@ class EpttAPI < Grape::API
   end
 
   desc "download zip archive of files_to_sync"
-  get 'files_to_sync' do
+  get 'zip_file' do
     content_type 'application/octet-stream'
-    header['Content-Disposition'] = "attachment; filename=files_to_sync.zip"
+    header['Content-Disposition'] = "attachment; filename=all.zip"
     env['api.format'] = :binary # to try if failing like that
-    path = get_bucket_files_in_zip
+    path = get_s3_bucket.objects['all.zip'].public_url
     File.open(path, "rb").read
   end
 
