@@ -16,4 +16,4 @@ gem 'rake', groups: [:development,:test]
 gem 'rack-test', group: :test
 gem 'rspec', group: :test
 gem 'pry', groups: [:development, :test]
-gem 'thin', groups: [:development, :production]
+# gem 'thin', groups: [:development, :production]
