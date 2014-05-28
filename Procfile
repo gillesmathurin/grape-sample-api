@@ -1,1 +1,1 @@
-web: bundle exec rackup config.ru -p $PORT -s thin
+web: bundle exec ruby server.rb -p $PORT -e prod
