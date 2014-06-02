@@ -133,17 +133,32 @@ class EpttAPI < Grape::API
       end
     end
 
-    def map_models_to_hash(model)
+    # def map_models_to_hash(model)
+    #   result = []
+    #   model.all.each do |r|
+    #     h = {}
+    #     r.columns.each { |column| h[column] = r.send(column) }
+    #     if model == Evaluation
+    #       h[:attempts] = r.attempts.map { |a| {id: a.id, date_attempt: a.date_attempt, instructor_first_name: a.instructor_first_name, instructor_last_name: a.instructor_last_name, result: a.result, evaluation_id: a.evaluation_id} }
+    #     end
+    #     if model == PracticalExercise
+    #       h[:links] = r.links.map { |l| {id: l.id, practical_exercise_id: l.practical_exercise_id, name: l.name, filename: l.filename, user_modified: l.user_modified, user_deleted: l.user_deleted} }
+    #       h[:theory_links] = r.theory_links.map { |tl| {id: tl.id, practical_exercise_id: tl.practical_exercise_id, name: tl.name, reference: tl.reference, user_modified: tl.user_modified} }
+    #     end
+    #     result << h
+    #   end
+    #   return result
+    # end
+
+    def map_models_to_hash(models)
       result = []
-      model.all.each do |r|
+      models.each do |r|
         h = {}
         r.columns.each { |column| h[column] = r.send(column) }
-        if model == Evaluation
-          h[:attempts] = r.attempts.map { |a| {id: a.id, date_attempt: a.date_attempt, instructor_first_name: a.instructor_first_name, instructor_last_name: a.instructor_last_name, result: a.result, evaluation_id: a.evaluation_id} }
-        end
-        if model == PracticalExercise
-          h[:links] = r.links.map { |l| {id: l.id, practical_exercise_id: l.practical_exercise_id, name: l.name, filename: l.filename, user_modified: l.user_modified, user_deleted: l.user_deleted} }
-          h[:theory_links] = r.theory_links.map { |tl| {id: tl.id, practical_exercise_id: tl.practical_exercise_id, name: tl.name, reference: tl.reference, user_modified: tl.user_modified} }
+        h[:attempts] = map_models_to_hash(r.attempts) if r.class == Evaluation
+        if r.class == PracticalExercise
+          h[:links] = map_models_to_hash(r.links)
+          h[:theory_links] = map_models_to_hash(r.theory_links)
         end
         result << h
       end
@@ -168,7 +183,8 @@ class EpttAPI < Grape::API
       keys = ["courses", "reservations", "results", "logbook_notes", "evaluations", "practical_exercises"]
 
       keys.each do |key|
-        model = key.singularize.camelize.constantize # transform string into Class name
+        # model = key.singularize.camelize.constantize # transform string into Class name
+        model = key.classify
         model.unrestrict_primary_key # allow to update id attribute
 
         if parsed_datas[key] && parsed_datas[key].any?
@@ -189,17 +205,31 @@ class EpttAPI < Grape::API
     end
 
     # Response
+    # {
+    #   users: map_models_to_hash(User),
+    #   aircrafts: map_models_to_hash(Aircraft),
+    #   courses: map_models_to_hash(Course),
+    #   reservations: map_models_to_hash(Reservation),
+    #   chapters: map_models_to_hash(Chapter),
+    #   results: map_models_to_hash(Result),
+    #   logbook_notes: map_models_to_hash(LogbookNote),
+    #   evaluations: map_models_to_hash(Evaluation),
+    #   practical_exercises: map_models_to_hash(PracticalExercise),
+    #   files_to_sync: get_bucket_files_and_url,
+    #   zip_file_url: get_s3_bucket.objects['all.zip'].public_url
+    # }
     {
-      users: map_models_to_hash(User),
-      aircrafts: map_models_to_hash(Aircraft),
-      courses: map_models_to_hash(Course),
-      reservations: map_models_to_hash(Reservation),
-      chapters: map_models_to_hash(Chapter),
-      results: map_models_to_hash(Result),
-      logbook_notes: map_models_to_hash(LogbookNote),
-      evaluations: map_models_to_hash(Evaluation),
-      practical_exercises: map_models_to_hash(PracticalExercise),
-      files_to_sync: get_bucket_files_and_url
+      users: map_models_to_hash(User.all),
+      aircrafts: map_models_to_hash(Aircraft.all),
+      courses: map_models_to_hash(Course.all),
+      reservations: map_models_to_hash(Reservation.all),
+      chapters: map_models_to_hash(Chapter.all),
+      results: map_models_to_hash(Result.all),
+      logbook_notes: map_models_to_hash(LogbookNote.all),
+      evaluations: map_models_to_hash(Evaluation.all),
+      practical_exercises: map_models_to_hash(PracticalExercise.all),
+      files_to_sync: get_bucket_files_and_url,
+      zip_file_url: get_s3_bucket.objects['all.zip'].public_url
     }
   end
 
