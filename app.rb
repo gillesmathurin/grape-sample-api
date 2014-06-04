@@ -66,38 +66,6 @@ class EpttAPI < Grape::API
       arr
     end
 
-    # def get_bucket_files_in_zip
-    #   dir_path = File.expand_path('../tmp/files_to_sync',__FILE__)
-    #   Dir.mkdir(dir_path) unless Dir.exist?(dir_path)
-    #   files_urls = get_bucket_files_and_url
-    #   files_urls.each do |hash|
-    #     fullpath = dir_path + '/' + hash[:filename]
-    #     unless File.exist?(fullpath)
-    #       tempfile = File.new(fullpath, "wb+", encoding: 'ascii-8bit')
-    #       begin
-    #           obj = get_s3_bucket.objects[hash[:filename]]
-    #           obj.read { |chunk| tempfile.write(chunk) }
-    #       rescue Exception => e
-    #       ensure
-    #         tempfile.close
-    #       end
-    #     end
-    #   end
-    #   zipfile_name = File.expand_path("../tmp/files_to_sync.zip",__FILE__)
-    #   unless File.exist?(zipfile_name)
-    #     Zip::File.open(zipfile_name, Zip::File::CREATE) do |zipfile|
-    #       Dir[File.join(dir_path, '*')].each do |file|
-    #         begin
-    #           zipfile.add(file.sub((dir_path+'/'), ''), file)
-    #         rescue Zip::EntryExistsError => e
-    #           puts e.message
-    #         end
-    #       end
-    #     end
-    #   end
-    #   return zipfile_name
-    # end
-
     def update_practical_exercises_and_associated_models(pe)
       pe_id = pe["id"]
       pe_wo_links_and_theory_links = pe.reject {|k,v| k == "links" || k == "theory_links"}
@@ -203,10 +171,12 @@ class EpttAPI < Grape::API
     }
   end
 
-  desc "download zip archive of files_to_sync"
+  desc "download files to sync in zip archive"
   get 'zip_file' do
     content_type 'application/octet-stream'
     header['Content-Disposition'] = "attachment; filename=all.zip"
+    header "Access-Control-Allow-Origin", "*"
+    header "Access-Control-Request-Method", "*"
     env['api.format'] = :binary
     path = get_s3_bucket.objects['all.zip'].public_url
     File.open(path, "rb").read
@@ -279,12 +249,12 @@ class EpttAPI < Grape::API
         puts "failed to parse line with random quote char #{e}"
         error = e
       end
-      # Il n'y a pas une façon plus simple de retourner la réponse ?
+      
       {
         :error => error,
-        :users => User.all.map { |e| { :id => e.id, :first_name => e.first_name , :last_name => e.last_name, :login => e.login, :role => e.role, :password_clear => e.password_clear, :company => e.company} },
-        :courses => Course.all.map { |e| { :id => e.id, :codename => e.codename , :name => e.name, :category => e.category, :variants => e.variants, :start_date => e.start_date, :end_date => e.end_date, :b_classification => e.b_classification} },
-        :reservations => Reservation.all.map { |e| { :id => e.id, :course_id => e.course_id , :user_id => e.user_id, :group => e.group, :user_modified => e.user_modified} }
+        :users => map_models_to_hash(User.all),
+        :courses => map_models_to_hash(Course.all),
+        :reservations => map_models_to_hash(Reservation.all)
       }
   end
 
