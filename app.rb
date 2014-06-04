@@ -173,10 +173,11 @@ class EpttAPI < Grape::API
 
   desc "download files to sync in zip archive"
   get 'zip_file' do
-    content_type 'application/octet-stream'
-    header['Content-Disposition'] = "attachment; filename=all.zip"
     header "Access-Control-Allow-Origin", "*"
     header "Access-Control-Request-Method", "*"
+    header['Content-Disposition'] = "attachment; filename=all.zip"
+    content_type 'application/octet-stream'
+    content_length get_s3_bucket.objects['all.zip'].content_length.to_s
     env['api.format'] = :binary
     path = get_s3_bucket.objects['all.zip'].public_url
     File.open(path, "rb").read
